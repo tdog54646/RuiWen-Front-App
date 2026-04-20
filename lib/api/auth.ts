@@ -4,6 +4,7 @@ import type {
   LoginRequest,
   LoginResponse,
   LogoutRequest,
+  PublicUserProfile,
   RefreshResponse,
   RegisterRequest,
   RegisterResponse,
@@ -44,6 +45,9 @@ export const authService = {
     apiFetch<AuthenticatedUser>(`${AUTH_PREFIX}/me`, {
       accessToken,
     }),
+
+  getUserById: (userId: number) =>
+    apiFetch<PublicUserProfile>(`${AUTH_PREFIX}/user?userId=${userId}`),
 
   refresh: (refreshToken: string) =>
     apiFetch<RefreshResponse>(`${AUTH_PREFIX}/token/refresh`, {

@@ -10,6 +10,7 @@ import type {
   LikeActionResponse,
   FavActionResponse,
   CounterResponse,
+  KnowpostHotQuestionResponse,
   VisibleScope,
 } from "@/lib/types/knowpost"
 
@@ -74,10 +75,23 @@ export const knowpostService = {
       { accessToken },
     ),
 
+  user: (userId: number, page = 1, size = 20, accessToken?: string | null) =>
+    apiFetch<FeedResponse>(
+      `${KNOWPOST_PREFIX}/user?page=${page}&size=${size}&userId=${userId}`,
+      {
+        accessToken: accessToken ?? undefined,
+      },
+    ),
+
   detail: (id: string, accessToken?: string) =>
     apiFetch<KnowpostDetailResponse>(`${KNOWPOST_PREFIX}/detail/${id}`, {
       accessToken: accessToken ?? null,
     }),
+
+  hotQuestion: (id: string, limit = 10) =>
+    apiFetch<KnowpostHotQuestionResponse>(
+      `${KNOWPOST_PREFIX}/${id}/qa/hotquestion?limit=${limit}`,
+    ),
 
   suggestDescription: (content: string, accessToken: string) =>
     apiFetch<{ description: string }>(

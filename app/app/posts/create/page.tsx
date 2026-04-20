@@ -1,8 +1,10 @@
 "use client"
 
+import Link from "next/link"
 import { useRef, useState } from "react"
 import { TagInput } from "@/components/ui/tag-input"
 import { SlideButton } from "@/components/ui/slide-button"
+import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useAuth } from "@/components/auth/auth-context"
@@ -20,7 +22,7 @@ type UploadedImage = {
 }
 
 export default function CreatePage() {
-  const { tokens } = useAuth()
+  const { tokens, isLoading } = useAuth()
   const [tags, setTags] = useState<string[]>([])
   const [title, setTitle] = useState("")
   const [content, setContent] = useState("")
@@ -38,6 +40,35 @@ export default function CreatePage() {
   const [imageUploading, setImageUploading] = useState(false)
   const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([])
   const MAX_IMAGES = 15
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col gap-2 rounded-2xl bg-background/90 p-6 shadow-sm">
+        <h1 className="text-2xl font-bold tracking-tight">创建新内容</h1>
+        <p className="text-sm text-muted-foreground">正在检查登录状态…</p>
+      </div>
+    )
+  }
+
+  if (!tokens?.accessToken) {
+    return (
+      <div className="flex flex-col gap-6 rounded-2xl bg-background/90 p-6 shadow-sm">
+        <div className="flex flex-col gap-1">
+          <h1 className="text-2xl font-bold tracking-tight">创建新内容</h1>
+          <p className="text-sm text-muted-foreground">分享你的知识，让更多人受益</p>
+        </div>
+
+        <section className="rounded-xl border p-4">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-sm text-muted-foreground">登录后可创作并发布内容</p>
+            <Link href="/login?next=/app/posts/create">
+              <Button size="sm">去登录</Button>
+            </Link>
+          </div>
+        </section>
+      </div>
+    )
+  }
 
   const ensureDraft = async (): Promise<string> => {
     if (postId) return postId

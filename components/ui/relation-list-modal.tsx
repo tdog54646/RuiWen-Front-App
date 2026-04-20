@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import Link from "next/link"
 import { relationService } from "@/lib/api/relation"
 import { useAuth } from "@/components/auth/auth-context"
 import type { ProfileResponse } from "@/lib/types/profile"
@@ -113,9 +114,11 @@ export function RelationListModal({
           )}
           <div className="flex flex-col gap-2">
             {profiles.map((p) => (
-              <div
+              <Link
                 key={p.id}
-                className="flex items-center gap-3 rounded-lg border p-2"
+                href={`/app/profile/${p.id}`}
+                className="flex items-center gap-3 rounded-lg border p-2 transition-colors hover:bg-muted/40"
+                onClick={onClose}
               >
                 <UserAvatar
                   src={p.avatar || undefined}
@@ -123,7 +126,7 @@ export function RelationListModal({
                   className="size-8"
                 />
                 <span className="text-sm">{p.nickname || "用户"}</span>
-              </div>
+              </Link>
             ))}
           </div>
         </div>

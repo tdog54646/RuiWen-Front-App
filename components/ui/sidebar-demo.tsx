@@ -1,6 +1,6 @@
 "use client"
 
-import { Home, LogOut, PenSquare, Search, User } from "lucide-react"
+import { Home, LogOut, PenSquare, Search, Trophy, User } from "lucide-react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 
@@ -13,6 +13,7 @@ const navItems = [
   { href: "/app", label: "首页", icon: Home },
   { href: "/app/search", label: "搜索", icon: Search },
   { href: "/app/posts/create", label: "创作", icon: PenSquare },
+  { href: "/app/leaderboard", label: "排行榜", icon: Trophy },
   { href: "/app/profile", label: "我的", icon: User },
 ] as const
 

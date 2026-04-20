@@ -42,6 +42,7 @@ export type FeedItem = {
   coverImage?: string
   tags: string[]
   tagJson?: string
+  authorId?: number
   authorAvatar?: string
   authorAvator?: string
   authorNickname: string
@@ -79,6 +80,11 @@ export type KnowpostDetailResponse = {
   visible: VisibleScope
   type: "image_text" | string
   publishTime?: string
+}
+
+export type KnowpostHotQuestionResponse = {
+  postId: string
+  question: string | null
 }
 
 export type LikeActionResponse = {

@@ -11,12 +11,13 @@ type FollowButtonProps = {
 }
 
 export function FollowButton({ targetUserId }: FollowButtonProps) {
-  const { tokens } = useAuth()
+  const { tokens, isLoading: authLoading } = useAuth()
   const [loading, setLoading] = useState(false)
   const [following, setFollowing] = useState(false)
   const [mutual, setMutual] = useState(false)
 
   useEffect(() => {
+    if (authLoading) return
     if (!targetUserId || !tokens?.accessToken) return
     relationService
       .status(targetUserId, tokens.accessToken)
@@ -25,9 +26,9 @@ export function FollowButton({ targetUserId }: FollowButtonProps) {
         setMutual(s.mutual)
       })
       .catch(() => {})
-  }, [targetUserId, tokens?.accessToken])
+  }, [authLoading, targetUserId, tokens?.accessToken])
 
-  if (!targetUserId || !tokens?.accessToken) return null
+  if (authLoading || !targetUserId || !tokens?.accessToken) return null
 
   const onClick = async () => {
     if (!tokens?.accessToken) return

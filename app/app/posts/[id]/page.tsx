@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
+import Link from "next/link"
 import { useParams } from "next/navigation"
 import { LikeFavBar } from "@/components/ui/like-fav-bar"
 import { FollowButton } from "@/components/ui/follow-button"
@@ -27,6 +28,7 @@ export default function PostDetailPage() {
   const [ragAnswer, setRagAnswer] = useState("")
   const [ragLoading, setRagLoading] = useState(false)
   const [ragError, setRagError] = useState<string | null>(null)
+  const [hotQuestion, setHotQuestion] = useState<string | null>(null)
   const ragESRef = useRef<EventSource | null>(null)
 
   useEffect(() => {
@@ -60,9 +62,32 @@ export default function PostDetailPage() {
     }
   }, [id, tokens?.accessToken])
 
-  const startRag = () => {
+  useEffect(() => {
+    let cancelled = false
+    if (!id) {
+      setHotQuestion(null)
+      return
+    }
+    knowpostService
+      .hotQuestion(id)
+      .then((resp) => {
+        if (cancelled) return
+        const question = resp.question?.trim() ?? ""
+        setHotQuestion(question || null)
+      })
+      .catch(() => {
+        if (!cancelled) setHotQuestion(null)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [id])
+
+  const startRag = (presetQuestion?: string) => {
     if (!id) return
-    const q = ragQuestion.trim()
+    const questionSource =
+      typeof presetQuestion === "string" ? presetQuestion : ragQuestion
+    const q = questionSource.trim()
     if (!q) return
     if (detail && detail.visible !== "public") {
       setRagError("仅公开知文支持问答")
@@ -70,6 +95,7 @@ export default function PostDetailPage() {
     }
     setRagError(null)
     setRagAnswer("")
+    setRagQuestion(q)
     if (ragESRef.current) {
       try { ragESRef.current.close() } catch {}
     }
@@ -138,14 +164,32 @@ export default function PostDetailPage() {
 
       <div className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center gap-3">
-          {detail?.authorAvatar && (
-            <UserAvatar
-              src={detail.authorAvatar}
-              nickname={detail.authorNickname}
-              className="size-9"
-            />
+          {detail?.authorId ? (
+            <Link
+              href={`/app/profile/${detail.authorId}`}
+              className="flex items-center gap-3 transition-opacity hover:opacity-80"
+            >
+              {detail.authorAvatar ? (
+                <UserAvatar
+                  src={detail.authorAvatar}
+                  nickname={detail.authorNickname}
+                  className="size-9"
+                />
+              ) : null}
+              <span className="font-semibold">{detail.authorNickname}</span>
+            </Link>
+          ) : (
+            <>
+              {detail?.authorAvatar ? (
+                <UserAvatar
+                  src={detail.authorAvatar}
+                  nickname={detail.authorNickname}
+                  className="size-9"
+                />
+              ) : null}
+              <span className="font-semibold">{detail?.authorNickname}</span>
+            </>
           )}
-          <span className="font-semibold">{detail?.authorNickname}</span>
           {detail?.authorId && !isSelf && (
             <FollowButton targetUserId={detail.authorId} />
           )}
@@ -202,6 +246,19 @@ export default function PostDetailPage() {
             <Bot className="size-4 text-primary" />
             AI 智能问答
           </div>
+          {hotQuestion && (
+            <div className="rounded-lg border bg-muted/20 p-2">
+              <p className="text-xs text-muted-foreground">大家都在问：</p>
+              <button
+                type="button"
+                className="mt-1 text-left text-sm text-primary underline-offset-4 hover:underline disabled:cursor-not-allowed disabled:opacity-50"
+                onClick={() => startRag(hotQuestion)}
+                disabled={ragLoading}
+              >
+                {hotQuestion}
+              </button>
+            </div>
+          )}
           <textarea
             className="min-h-[60px] w-full resize-y rounded-lg border bg-background p-2 text-sm outline-none focus:border-ring"
             placeholder="围绕本知文提问…"
@@ -211,7 +268,7 @@ export default function PostDetailPage() {
           <div className="flex gap-2">
             <Button
               size="sm"
-              onClick={startRag}
+              onClick={() => startRag()}
               disabled={ragLoading || !ragQuestion.trim()}
             >
               {ragLoading ? (

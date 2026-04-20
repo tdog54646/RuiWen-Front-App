@@ -1,11 +1,12 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Eye, EyeOff, Sparkles } from "lucide-react"
+import { ArrowLeft, Eye, EyeOff, Sparkles } from "lucide-react"
 import { useAuth } from "@/components/auth/auth-context"
 import { ApiError } from "@/lib/api/client"
 import type { IdentifierType, LoginRequest } from "@/lib/types/auth"
@@ -450,7 +451,14 @@ function LoginPage({ onLoginSuccess }: LoginPageProps) {
       </div>
 
       {/* Right — login form */}
-      <div className="flex items-center justify-center bg-background p-8">
+      <div className="relative flex items-center justify-center bg-background p-8">
+        <Link
+          href="/app"
+          className="absolute right-6 top-6 z-10 inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <ArrowLeft className="size-4 shrink-0" aria-hidden />
+          返回主页
+        </Link>
         <div className="w-full max-w-[420px]">
           <div className="mb-12 flex items-center justify-center gap-2 text-lg font-semibold lg:hidden">
             <div className="flex size-8 items-center justify-center rounded-lg bg-primary/10">

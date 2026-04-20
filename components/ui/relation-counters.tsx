@@ -11,18 +11,19 @@ type RelationCountersProps = {
 }
 
 export function RelationCounters({ userId }: RelationCountersProps) {
-  const { tokens } = useAuth()
+  const { tokens, isLoading: authLoading } = useAuth()
   const [counts, setCounts] = useState<RelationCountersResponse | null>(null)
   const [open, setOpen] = useState(false)
   const [mode, setMode] = useState<"following" | "followers">("following")
 
   useEffect(() => {
-    if (!userId || !tokens?.accessToken) return
+    if (authLoading) return
+    if (!userId) return
     relationService
-      .counters(userId, tokens.accessToken)
+      .counters(userId, tokens?.accessToken)
       .then(setCounts)
       .catch(() => {})
-  }, [userId, tokens?.accessToken])
+  }, [authLoading, userId, tokens?.accessToken])
 
   if (!userId || !counts) return null
 

@@ -64,9 +64,9 @@ export const relationService = {
     )
   },
 
-  counters: (userId: number, accessToken: string) =>
+  counters: (userId: number, accessToken?: string | null) =>
     apiFetch<RelationCountersResponse>(
       `${RELATION_PREFIX}/counter?userId=${userId}`,
-      { accessToken },
+      { accessToken: accessToken ?? undefined },
     ),
 }

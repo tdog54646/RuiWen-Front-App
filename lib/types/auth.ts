@@ -75,6 +75,20 @@ export type LogoutRequest = {
 
 export type AuthenticatedUser = AuthUserResponse
 
+export type PublicUserProfile = {
+  id: number
+  nickname: string
+  avatar?: string | null
+  phone: string | null
+  zhId?: string | null
+  birthday?: string | null
+  school?: string | null
+  bio?: string | null
+  gender?: Gender | null
+  tagJson?: string | null
+  email: string | null
+}
+
 export type Gender = "MALE" | "FEMALE" | "OTHER" | "UNKNOWN"
 
 export type ErrorResponse = {
