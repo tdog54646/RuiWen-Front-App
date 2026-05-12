@@ -37,10 +37,7 @@ function getStoredAccessToken(): string | null {
   }
 }
 
-export async function apiFetch<TResponse>(
-  path: string,
-  options: ApiFetchOptions = {},
-): Promise<TResponse> {
+function buildApiRequest(path: string, options: ApiFetchOptions = {}) {
   const baseUrl = getBaseUrl()
   const { method = "GET", headers = {}, body, accessToken, signal } = options
 
@@ -73,41 +70,65 @@ export async function apiFetch<TResponse>(
   }
 
   const url = baseUrl ? `${baseUrl}${path}` : path
-  const response = await fetch(url, {
-    method,
-    headers: mergedHeaders,
-    body: isFormData
-      ? (body as FormData)
-      : body
-        ? JSON.stringify(body)
-        : undefined,
-    signal,
-    credentials: "include",
-  })
+  return {
+    url,
+    init: {
+      method,
+      headers: mergedHeaders,
+      body: isFormData
+        ? (body as FormData)
+        : body
+          ? JSON.stringify(body)
+          : undefined,
+      signal,
+      credentials: "include",
+    } satisfies RequestInit,
+  }
+}
+
+async function throwApiError(response: Response): Promise<never> {
+  let rawText = ""
+  try {
+    rawText = await response.text()
+  } catch {
+    rawText = ""
+  }
+  let errorData: unknown = rawText
+  if (rawText) {
+    try {
+      errorData = JSON.parse(rawText)
+    } catch {
+      // keep raw text
+    }
+  }
+  const message =
+    typeof errorData === "object" &&
+    errorData !== null &&
+    "message" in errorData
+      ? (errorData as { message: string }).message
+      : rawText || `请求失败：${response.status}`
+  throw new ApiError(response.status, message, errorData)
+}
+
+export async function apiFetchResponse(
+  path: string,
+  options: ApiFetchOptions = {},
+): Promise<Response> {
+  const { url, init } = buildApiRequest(path, options)
+  const response = await fetch(url, init)
 
   if (!response.ok) {
-    let rawText = ""
-    try {
-      rawText = await response.text()
-    } catch {
-      rawText = ""
-    }
-    let errorData: unknown = rawText
-    if (rawText) {
-      try {
-        errorData = JSON.parse(rawText)
-      } catch {
-        // keep raw text
-      }
-    }
-    const message =
-      typeof errorData === "object" &&
-      errorData !== null &&
-      "message" in errorData
-        ? (errorData as { message: string }).message
-        : rawText || `请求失败：${response.status}`
-    throw new ApiError(response.status, message, errorData)
+    await throwApiError(response)
   }
+
+  return response
+}
+
+export async function apiFetch<TResponse>(
+  path: string,
+  options: ApiFetchOptions = {},
+): Promise<TResponse> {
+  const response = await apiFetchResponse(path, options)
 
   if (response.status === 204) {
     return undefined as TResponse

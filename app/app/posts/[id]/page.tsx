@@ -10,8 +10,13 @@ import { UserAvatar } from "@/components/ui/user-avatar"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/components/auth/auth-context"
 import { knowpostService } from "@/lib/api/knowpost"
+import { qaService } from "@/lib/api/qa"
 import type { KnowpostDetailResponse } from "@/lib/types/knowpost"
 import { X, ChevronLeft, ChevronRight, Bot, Send, Loader2 } from "lucide-react"
+
+function isAbortError(error: unknown) {
+  return error instanceof Error && error.name === "AbortError"
+}
 
 export default function PostDetailPage() {
   const params = useParams<{ id: string }>()
@@ -29,7 +34,7 @@ export default function PostDetailPage() {
   const [ragLoading, setRagLoading] = useState(false)
   const [ragError, setRagError] = useState<string | null>(null)
   const [hotQuestion, setHotQuestion] = useState<string | null>(null)
-  const ragESRef = useRef<EventSource | null>(null)
+  const ragControllerRef = useRef<AbortController | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -83,12 +88,40 @@ export default function PostDetailPage() {
     }
   }, [id])
 
+  const streamRag = async (q: string, controller: AbortController) => {
+    try {
+      await qaService.streamKnowpost(id, {
+        question: q,
+        topK: 5,
+        maxTokens: 1024,
+        accessToken: tokens?.accessToken ?? null,
+        signal: controller.signal,
+        onMessage: (message) => {
+          setRagAnswer((prev) => prev + message)
+        },
+      })
+    } catch (err) {
+      if (!isAbortError(err)) {
+        setRagError(err instanceof Error ? err.message : "请求失败")
+      }
+    } finally {
+      if (ragControllerRef.current === controller) {
+        ragControllerRef.current = null
+        setRagLoading(false)
+      }
+    }
+  }
+
   const startRag = (presetQuestion?: string) => {
     if (!id) return
     const questionSource =
       typeof presetQuestion === "string" ? presetQuestion : ragQuestion
     const q = questionSource.trim()
     if (!q) return
+    if (!tokens?.accessToken) {
+      setRagError("请先登录后提问")
+      return
+    }
     if (detail && detail.visible !== "public") {
       setRagError("仅公开知文支持问答")
       return
@@ -96,36 +129,23 @@ export default function PostDetailPage() {
     setRagError(null)
     setRagAnswer("")
     setRagQuestion(q)
-    if (ragESRef.current) {
-      try { ragESRef.current.close() } catch {}
-    }
-    const url = `/api/knowposts/${id}/qa/stream?question=${encodeURIComponent(q)}&topK=5&maxTokens=1024`
-    const es = new EventSource(url)
-    ragESRef.current = es
+
+    ragControllerRef.current?.abort()
+    const controller = new AbortController()
+    ragControllerRef.current = controller
     setRagLoading(true)
-    es.onmessage = (e) => {
-      setRagAnswer((prev) => prev + (e.data ?? ""))
-    }
-    es.onerror = () => {
-      setRagLoading(false)
-      try { es.close() } catch {}
-      ragESRef.current = null
-    }
+    void streamRag(q, controller)
   }
 
   const stopRag = () => {
-    if (ragESRef.current) {
-      try { ragESRef.current.close() } catch {}
-      ragESRef.current = null
-    }
+    ragControllerRef.current?.abort()
+    ragControllerRef.current = null
     setRagLoading(false)
   }
 
   useEffect(() => {
     return () => {
-      if (ragESRef.current) {
-        try { ragESRef.current.close() } catch {}
-      }
+      ragControllerRef.current?.abort()
     }
   }, [])
 

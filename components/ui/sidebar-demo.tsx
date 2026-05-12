@@ -1,6 +1,6 @@
 "use client"
 
-import { Home, LogOut, PenSquare, Search, Trophy, User } from "lucide-react"
+import { Home, LogOut, MessageSquare, PenSquare, Search, Trophy, User } from "lucide-react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 
@@ -15,6 +15,7 @@ const navItems = [
   { href: "/app/posts/create", label: "创作", icon: PenSquare },
   { href: "/app/leaderboard", label: "排行榜", icon: Trophy },
   { href: "/app/profile", label: "我的", icon: User },
+  { href: "/app/qa", label: "AI问答", icon: MessageSquare },
 ] as const
 
 export function SidebarDemo() {
