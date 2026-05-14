@@ -248,30 +248,29 @@ export default function PostDetailPage() {
         )}
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_380px]">
-        <div>
-          <h2 className="mb-3 text-lg font-semibold">内容正文</h2>
-          <div className="rounded-xl bg-muted/30 p-6">
-            {contentText ? (
-              <MarkdownRenderer content={contentText} />
-            ) : (
-              <span className="text-muted-foreground">暂无内容</span>
-            )}
-            {contentError && (
-              <div className="mt-2 text-sm text-destructive">
-                {contentError}
-              </div>
-            )}
-          </div>
+      <div>
+        <h2 className="mb-3 text-lg font-semibold">内容正文</h2>
+        <div className="rounded-xl bg-muted/30 p-6">
+          {contentText ? (
+            <MarkdownRenderer content={contentText} />
+          ) : (
+            <span className="text-muted-foreground">暂无内容</span>
+          )}
+          {contentError && (
+            <div className="mt-2 text-sm text-destructive">
+              {contentError}
+            </div>
+          )}
         </div>
 
-        <aside className="flex flex-col gap-3 rounded-xl border p-4">
-          <div className="flex items-center gap-2 text-sm font-semibold">
+        {/* AI 智能问答 — 移至正文下方 */}
+        <div className="mt-6 rounded-xl border p-4">
+          <div className="mb-3 flex items-center gap-2 text-sm font-semibold">
             <Bot className="size-4 text-primary" />
             AI 智能问答
           </div>
           {hotQuestion && (
-            <div className="rounded-lg border bg-muted/20 p-2">
+            <div className="mb-3 rounded-lg border bg-muted/20 p-2">
               <p className="text-xs text-muted-foreground">大家都在问：</p>
               <button
                 type="button"
@@ -289,7 +288,7 @@ export default function PostDetailPage() {
             value={ragQuestion}
             onChange={(e) => setRagQuestion(e.target.value)}
           />
-          <div className="flex gap-2">
+          <div className="mt-2 flex gap-2">
             <Button
               size="sm"
               onClick={() => startRag()}
@@ -311,13 +310,13 @@ export default function PostDetailPage() {
               停止
             </Button>
           </div>
-          <p className="text-[11px] text-muted-foreground">
-            仅“公开”知文支持问答，答案基于当前知文实时生成。
+          <p className="mt-1.5 text-[11px] text-muted-foreground">
+            仅&quot;公开&quot;知文支持问答，答案基于当前知文实时生成。
           </p>
           {ragError && (
-            <div className="text-xs text-destructive">{ragError}</div>
+            <div className="mt-2 text-xs text-destructive">{ragError}</div>
           )}
-          <div className="flex-1 overflow-auto rounded-lg bg-muted/30 p-3 text-sm">
+          <div className="mt-3 flex-1 overflow-auto rounded-lg bg-muted/30 p-3 text-sm">
             {ragAnswer ? (
               <MarkdownRenderer content={ragAnswer} className="prose-sm" />
             ) : (
@@ -326,7 +325,7 @@ export default function PostDetailPage() {
               </span>
             )}
           </div>
-        </aside>
+        </div>
       </div>
 
       {previewOpen && detail?.images?.length ? (

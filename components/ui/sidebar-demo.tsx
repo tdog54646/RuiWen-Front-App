@@ -79,30 +79,30 @@ export function SidebarDemo() {
                 </Link>
               )
             })}
-            <button
-              type="button"
-              onClick={async () => {
-                closeMobile()
-                if (user) {
+            {user && (
+              <button
+                type="button"
+                onClick={async () => {
+                  closeMobile()
                   await logout()
-                }
-                router.push("/login")
-              }}
-              className={cn(
-                "flex h-11 cursor-pointer items-center rounded-xl px-3 text-sm font-medium transition-colors text-sidebar-foreground/85 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-                expanded ? "justify-start gap-3" : "justify-center",
-              )}
-            >
-              <LogOut className="size-4 shrink-0" />
-              <span
+                  router.push("/login")
+                }}
                 className={cn(
-                  "whitespace-nowrap transition-opacity",
-                  expanded ? "opacity-100" : "pointer-events-none w-0 opacity-0",
+                  "flex h-11 cursor-pointer items-center rounded-xl px-3 text-sm font-medium transition-colors text-sidebar-foreground/85 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                  expanded ? "justify-start gap-3" : "justify-center",
                 )}
               >
-                退出
-              </span>
-            </button>
+                <LogOut className="size-4 shrink-0" />
+                <span
+                  className={cn(
+                    "whitespace-nowrap transition-opacity",
+                    expanded ? "opacity-100" : "pointer-events-none w-0 opacity-0",
+                  )}
+                >
+                  退出
+                </span>
+              </button>
+            )}
           </nav>
 
           <div className="mt-auto overflow-hidden rounded-xl border border-sidebar-border bg-sidebar-muted">

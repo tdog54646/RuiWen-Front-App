@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
@@ -30,6 +31,26 @@ export default function RootLayout({
       >
         {children}
         <Toaster position="top-center" richColors />
+        <Script
+          id="monaco-env"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+(function() {
+  var vsBase = "/monaco-editor/vs";
+  window.MonacoEnvironment = {
+    getWorkerUrl: function(moduleId, label) {
+      if (label === "json") return vsBase + "/assets/json.worker-DKiEKt88.js";
+      if (label === "css" || label === "scss" || label === "less") return vsBase + "/assets/css.worker-HnVq6Ewq.js";
+      if (label === "html" || label === "handlebars" || label === "razor") return vsBase + "/assets/html.worker-B51mlPHg.js";
+      if (label === "typescript" || label === "javascript") return vsBase + "/assets/ts.worker-CMbG-7ft.js";
+      return vsBase + "/assets/editor.worker-Be8ye1pW.js";
+    }
+  };
+})();
+            `,
+          }}
+        />
       </body>
     </html>
   );

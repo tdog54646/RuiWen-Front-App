@@ -15,6 +15,19 @@ import {
   ensureHttps,
 } from "@/lib/api/knowpost"
 import { X } from "lucide-react"
+import dynamic from "next/dynamic"
+
+const DynamicEditor = dynamic(
+  () => import("@/components/ui/advanced-markdown-editor"),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="min-h-[600px] w-full flex items-center justify-center border rounded-md bg-muted/50 text-sm text-muted-foreground">
+        编辑器加载中...
+      </div>
+    ),
+  }
+)
 
 type UploadedImage = {
   ossUrl: string
@@ -292,13 +305,10 @@ export default function CreatePage() {
 
           <div className="space-y-2 md:col-span-2">
             <Label htmlFor="content">内容正文 *</Label>
-            <textarea
-              id="content"
-              className="min-h-[200px] w-full resize-y rounded-lg border bg-background p-3 text-sm outline-none focus:border-ring"
-              placeholder="写下你的知识内容..."
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-            />
+            <DynamicEditor
+                initialValue={content}
+                onChange={(val) => setContent(val)}
+              />
           </div>
 
           <div className="space-y-2 md:col-span-2">
