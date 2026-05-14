@@ -52,6 +52,7 @@ export type FeedItem = {
   faved?: boolean
   isTop?: boolean
   visible?: VisibleScope
+  publishTime?: string | number
 }
 
 export type FeedResponse = {
@@ -79,7 +80,7 @@ export type KnowpostDetailResponse = {
   isTop: boolean
   visible: VisibleScope
   type: "image_text" | string
-  publishTime?: string
+  publishTime?: string | number
 }
 
 export type KnowpostHotQuestionResponse = {

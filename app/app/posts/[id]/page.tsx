@@ -215,7 +215,7 @@ export default function PostDetailPage() {
           )}
         </div>
         <div className="flex flex-wrap gap-2">
-          {(detail?.tags ?? []).map((tag) => (
+          {(detail?.tags ?? []).reduce<string[]>((acc, tag) => acc.includes(tag) ? acc : [...acc, tag], []).map((tag) => (
             <span
               key={tag}
               className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary"
@@ -226,7 +226,11 @@ export default function PostDetailPage() {
         </div>
         {detail?.publishTime && (
           <span className="text-xs text-muted-foreground">
-            {new Date(detail.publishTime).toLocaleDateString("zh-CN")}
+            {new Date(
+              Number(detail.publishTime) > 1e15
+                ? Number(detail.publishTime) / 1000
+                : Number(detail.publishTime)
+            ).toLocaleDateString("zh-CN")}
           </span>
         )}
         {detail && (

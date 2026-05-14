@@ -11,7 +11,9 @@ function parseTags(tagJson?: string | null): string[] {
   if (!tagJson) return []
   try {
     const parsed = JSON.parse(tagJson)
-    return Array.isArray(parsed) ? parsed.filter((tag) => typeof tag === "string") : []
+    if (!Array.isArray(parsed)) return []
+    const seen = new Set<string>()
+    return parsed.filter((tag) => typeof tag === "string" && !seen.has(tag) && seen.add(tag))
   } catch {
     return []
   }
