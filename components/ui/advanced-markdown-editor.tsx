@@ -46,7 +46,10 @@ function loadMonaco(): Promise<typeof import("monaco-editor")> {
     script.src = `${MONACO_BASE}/loader.js`;
     script.onload = () => {
       const req = (window as typeof window & {
-        require?: (deps: string[], cb: () => void) => void;
+        require?: {
+          (deps: string[], cb: () => void): void;
+          config(options: { paths: Record<string, string> }): void;
+        };
       }).require;
       if (!req) {
         reject(new Error("require not found after loader.js"));
