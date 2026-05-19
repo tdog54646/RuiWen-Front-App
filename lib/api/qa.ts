@@ -101,4 +101,6 @@ async function streamQa(path: string, request: QaStreamRequest) {
 export const qaService = {
   streamKnowledgeBase: (request: QaStreamRequest) =>
     streamQa(`${RAG_PREFIX}/query`, request),
+  streamKnowpost: (knowpostId: string, request: QaStreamRequest) =>
+    streamQa(`${RAG_PREFIX}/knowpost/${knowpostId}`, request),
 }
