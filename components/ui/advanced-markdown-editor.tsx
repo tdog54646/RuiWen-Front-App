@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 
 declare global {
   interface Window {
+    monaco?: typeof import("monaco-editor");
     __monacoEditorInstance?: editor.IStandaloneCodeEditor;
   }
 }
@@ -215,7 +216,7 @@ export default function AdvancedMarkdownEditor({
   // Theme sync
   useEffect(() => {
     if (!isReady || !editorRef.current) return;
-    const monaco = (window as typeof window & { monaco?: typeof import("monaco-editor") }).monaco;
+    const monaco = window.monaco;
     if (monaco) {
       monaco.editor.setTheme(isDark ? "vs-dark" : "vs-light");
     }
