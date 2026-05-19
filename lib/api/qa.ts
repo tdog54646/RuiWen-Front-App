@@ -1,6 +1,6 @@
 import { apiFetchResponse } from "./client"
 
-const KNOWPOST_PREFIX = "/api/knowposts"
+const RAG_PREFIX = "/api/rag"
 
 export type QaStreamRequest = {
   question: string
@@ -11,37 +11,25 @@ export type QaStreamRequest = {
   onMessage: (message: string) => void
 }
 
-function buildQaQuery({
-  question,
-  topK = 5,
-  maxTokens = 1024,
-}: Pick<QaStreamRequest, "question" | "topK" | "maxTokens">) {
-  const normalizedQuestion = question.trim()
-  if (!normalizedQuestion) {
-    throw new Error("请输入问题")
-  }
-
-  return new URLSearchParams({
-    question: normalizedQuestion,
-    topK: String(topK),
-    maxTokens: String(maxTokens),
-  }).toString()
-}
-
 function emitSseEvent(rawEvent: string, onMessage: (message: string) => void) {
   const dataLines = rawEvent
     .split(/\r?\n/)
     .filter((line) => line.startsWith("data:"))
     .map((line) => {
-      const value = line.slice("data:".length)
+      const value = line.slice("data:".length).trim()
       return value.startsWith(" ") ? value.slice(1) : value
     })
 
-  if (dataLines.length === 0) return
-
-  const message = dataLines.join("\n")
-  if (message && message !== "[DONE]") {
-    onMessage(message)
+  for (const line of dataLines) {
+    if (!line || line === "[DONE]") continue
+    try {
+      const parsed = JSON.parse(line) as { content?: string; done?: boolean }
+      if (parsed.content) {
+        onMessage(parsed.content)
+      }
+    } catch {
+      // non-JSON line, ignore
+    }
   }
 }
 
@@ -92,24 +80,25 @@ async function readSseResponse(
 }
 
 async function streamQa(path: string, request: QaStreamRequest) {
-  const response = await apiFetchResponse(
-    `${path}?${buildQaQuery(request)}`,
-    {
-      accessToken: request.accessToken,
-      headers: {
-        Accept: "text/event-stream",
-      },
-      signal: request.signal,
+  const response = await apiFetchResponse(path, {
+    accessToken: request.accessToken,
+    method: "POST",
+    headers: {
+      Accept: "text/event-stream, application/json",
+      "Content-Type": "application/json",
     },
-  )
+    body: {
+      question: request.question.trim(),
+      topK: request.topK ?? 5,
+      maxTokens: request.maxTokens ?? 500,
+    },
+    signal: request.signal,
+  })
 
   await readSseResponse(response, request.onMessage)
 }
 
 export const qaService = {
   streamKnowledgeBase: (request: QaStreamRequest) =>
-    streamQa(`${KNOWPOST_PREFIX}/qa/stream`, request),
-
-  streamKnowpost: (postId: string, request: QaStreamRequest) =>
-    streamQa(`${KNOWPOST_PREFIX}/${postId}/qa/stream`, request),
+    streamQa(`${RAG_PREFIX}/query`, request),
 }
